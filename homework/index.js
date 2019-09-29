@@ -1,47 +1,65 @@
-'use strict';
+document.onload = getData();
+function getData() {
+  let url = 'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
+  let xhr = new XMLHttpRequest();
 
-{
-  function fetchJSON(url, cb) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.responseType = 'json';
-    xhr.onload = () => {
-      if (xhr.status < 400) {
-        cb(null, xhr.response);
-      } else {
-        cb(new Error(`Network error: ${xhr.status} - ${xhr.statusText}`));
+  xhr.open('GET', url, true);
+  xhr.onload = function() {
+    if (xhr.status == 200) {
+      let repos = JSON.parse(this.responseText);
+      let selector = document.getElementById('repoSelector');
+      let defaultOption = document.createElement('option');
+      defaultOption.text = 'Choose a repo';
+      selector.add(defaultOption);
+      selector.selectedIndex = 0;
+
+      repos.sort((a, b) => a.name.localeCompare(b.name));
+      let optArr = [];
+      for (let i in repos) {
+        let option = document.createElement('option');
+
+        option.innerHTML = repos[i].name;
+        selector.appendChild(option);
+        optArr.push(option);
       }
-    };
-    xhr.onerror = () => cb(new Error('Network request failed'));
-    xhr.send();
-  }
+      selector.onchange = () => showRepoDetails();
 
-  function createAndAppend(name, parent, options = {}) {
-    const elem = document.createElement(name);
-    parent.appendChild(elem);
-    Object.keys(options).forEach(key => {
-      const value = options[key];
-      if (key === 'text') {
-        elem.textContent = value;
-      } else {
-        elem.setAttribute(key, value);
+      function showRepoDetails() {
+        let title = selector.options[selector.selectedIndex].text;
+        xhr.open('GET', 'https://api.github.com/repos/HackYourFuture/' + title, true);
+
+        xhr.onload = () => {
+          let res = JSON.parse(xhr.response);
+
+          document.getElementById('repoName').innerHTML = 'Repository: ' + res.name;
+          document.getElementById('desc').innerHTML = 'Description: ' + res.description;
+          document.getElementById('forks').innerHTML = 'Forks: ' + res.forks_count;
+          document.getElementById('updated').innerHTML = 'Updated: ' + res.updated_at;
+
+          xhr.open('GET', 'https://api.github.com/repos/HackYourFuture/' + title + '/contributors');
+
+          xhr.onload = () => {
+            let cont = JSON.parse(xhr.response);
+            for (let i in cont) {
+              let avatar = '<img src="' + cont[i].avatar_url + '" width="50px height="60px">';
+
+              let contList = document.getElementById('cont-list');
+              let li = document.createElement('li');
+              li.innerHTML = avatar + ' ' + ' ' + cont[i].login + '   ' + cont[i].contributions;
+              contList.appendChild(li);
+
+              console.log(cont[i].login);
+              console.log(cont[i].contributions);
+            }
+          };
+          xhr.send();
+        };
+        xhr.send();
       }
-    });
-    return elem;
-  }
-
-  function main(url) {
-    fetchJSON(url, (err, data) => {
-      const root = document.getElementById('root');
-      if (err) {
-        createAndAppend('div', root, { text: err.message, class: 'alert-error' });
-      } else {
-        createAndAppend('pre', root, { text: JSON.stringify(data, null, 2) });
-      }
-    });
-  }
-
-  const REPOS_URL = 'https://api.github.com/orgs/foocoding/repos?per_page=100';
-
-  window.onload = () => main(REPOS_URL);
+    } else {
+      document.getElementById('title').innerHTML = 'Error:' + this.status + ' ' + this.statusText;
+      console.log('Error:', this.status, this.statusText);
+    }
+  };
+  xhr.send();
 }
