@@ -1,62 +1,94 @@
 body {
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: whitesmoke;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-top: 0;
+  color: lightslategray;
 }
 
-#header {
-  width: 50%;
+.alert-error {
+  color: red;
+}
+
+nav {
   display: flex;
-  margin: auto;
-  align-content: center;
   flex-direction: row;
-  background-color: #3F51B5;
-  padding: 10px;
+  align-items: center;
+  background-color: rgba(3, 53, 68, 0.753);
+  padding: 1em;
+
 }
 
-#title {
-  color: white;
-  margin-left: 30px;
-  font-family: 'Roboto', sans-serif;
+h1 {
+  color: rgb(255, 255, 255);
 }
 
-#repoSelector {
-  margin-left: 20px;
-  height: 40px;
-  font-size: 18px;
-  margin-top: 15px;
-  margin-left: 30px;
+nav>select {
+  margin-left: 20em;
+  width: 250px;
+  padding: 5px 35px 5px 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  height: 34px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: url(https://avatars2.githubusercontent.com/u/20858568?s=280&v=4) 96% / 15% no-repeat #eee;
 }
 
-#main {
-
-  width: 50%;
-  margin: auto;
+.container {
   display: flex;
-  align-items: flex-start;
-  flex-direction: row;
-
+  flex-direction: column;
+  align-items: stretch;
 }
 
-#info {
-  width: 48%;
-  padding-left: 20px;
-  min-height: 250px;
+.repo_info,
+.contributors {
+  background-color: white;
+  margin: 1em 0.5em 1em 0.5em;
+  padding: 1em 0.5em 1em 0.5em;
+  border-radius: 0.2em;
 }
 
-#contributors {
-  width: 48%;
-  margin-left: 2%;
-  min-height: 250px;
-
+.contributor-name {
+  text-decoration: none;
+  font-weight: bold;
 }
 
-li {
+ul {
   list-style: none;
-  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
-.borderframe {
-  border: none;
-  border-radius: 2px;
-  background-color: #fff;
-  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, .2), 0 3px 4px 0 rgba(0, 0, 0, .14), 0 3px 3px -2px rgba(0, 0, 0, .12);
+ul>li {
+
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+img {
+  border-radius: 50%;
+  width: 5em;
+}
+
+/* responsive design */
+@media (min-width: 768px) {
+  #container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    color: lightslategray;
+  }
+
+  .infoBox,
+  .contributorBox {
+    background-color: white;
+    flex: 1;
+    margin: 1em 0.5em 1em 0.5em;
+    padding: 1em 0.5em 1em 0.5em;
+    border-radius: 0.2em;
+  }
 }

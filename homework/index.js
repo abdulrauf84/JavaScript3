@@ -1,65 +1,141 @@
-document.onload = getData();
-function getData() {
-  let url = 'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
-  let xhr = new XMLHttpRequest();
+'use strict';
+const HYF_REPOS_URL = 'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
 
-  xhr.open('GET', url, true);
-  xhr.onload = function() {
-    if (xhr.status == 200) {
-      let repos = JSON.parse(this.responseText);
-      let selector = document.getElementById('repoSelector');
-      let defaultOption = document.createElement('option');
-      defaultOption.text = 'Choose a repo';
-      selector.add(defaultOption);
-      selector.selectedIndex = 0;
+const mainDiv = createAndAppend('div', root, { class: 'container' });
 
-      repos.sort((a, b) => a.name.localeCompare(b.name));
-      let optArr = [];
-      for (let i in repos) {
-        let option = document.createElement('option');
+const nav = createAndAppend('nav', mainDiv, { class: 'nav' });
+createAndAppend('h1', nav, {
+  text: 'Hack Your Future',
+});
+const repoInfo = createAndAppend('div', mainDiv, {
+  class: 'repo_info',
+});
+let mainRepo;
+let onchange;
+let dropdown = createAndAppend('select', nav);
+const ul = createAndAppend('ul', root, { class: 'contributors' });
 
-        option.innerHTML = repos[i].name;
-        selector.appendChild(option);
-        optArr.push(option);
-      }
-      selector.onchange = () => showRepoDetails();
+//Init
+(function init() {
+  main(HYF_REPOS_URL);
+})();
 
-      function showRepoDetails() {
-        let title = selector.options[selector.selectedIndex].text;
-        xhr.open('GET', 'https://api.github.com/repos/HackYourFuture/' + title, true);
+//Main Process Function
+function main(url) {
+  fetchJSON(url, (err, data) => {
+    const root = document.getElementById('root');
 
-        xhr.onload = () => {
-          let res = JSON.parse(xhr.response);
-
-          document.getElementById('repoName').innerHTML = 'Repository: ' + res.name;
-          document.getElementById('desc').innerHTML = 'Description: ' + res.description;
-          document.getElementById('forks').innerHTML = 'Forks: ' + res.forks_count;
-          document.getElementById('updated').innerHTML = 'Updated: ' + res.updated_at;
-
-          xhr.open('GET', 'https://api.github.com/repos/HackYourFuture/' + title + '/contributors');
-
-          xhr.onload = () => {
-            let cont = JSON.parse(xhr.response);
-            for (let i in cont) {
-              let avatar = '<img src="' + cont[i].avatar_url + '" width="50px height="60px">';
-
-              let contList = document.getElementById('cont-list');
-              let li = document.createElement('li');
-              li.innerHTML = avatar + ' ' + ' ' + cont[i].login + '   ' + cont[i].contributions;
-              contList.appendChild(li);
-
-              console.log(cont[i].login);
-              console.log(cont[i].contributions);
-            }
-          };
-          xhr.send();
-        };
-        xhr.send();
-      }
+    if (err) {
+      createAndAppend('div', mainDiv, {
+        text: err.message,
+        class: 'alert-error',
+      });
     } else {
-      document.getElementById('title').innerHTML = 'Error:' + this.status + ' ' + this.statusText;
-      console.log('Error:', this.status, this.statusText);
+      dropdown.length = 0;
+      createAndAppend('option', dropdown, {
+        text: 'Choose a Repo',
+      });
+      for (let i = 0; i < data.length; i++) {
+        mainRepo = data[i];
+        mainRepo = createAndAppend('option', dropdown, {
+          text: data[i].name,
+          value: i,
+        });
+      }
+      dropdown.onchange = () => {
+        getContributors(dropdown.options[dropdown.selectedIndex].text);
+      };
+      mainRepo = data;
+    }
+  });
+}
+
+/*****************************************************/
+// Get Contributors
+function getContributors(repo) {
+  //Ul & mainDiv clearing
+  if (ul.hasChildNodes() && repoInfo.hasChildNodes()) {
+    while (ul.hasChildNodes() && repoInfo.hasChildNodes()) {
+      ul.removeChild(ul.firstChild);
+      repoInfo.removeChild(repoInfo.firstChild);
+    }
+  }
+  let contributorURL = `https://api.github.com/repos/hackyourfuture/${repo}/contributors`;
+
+  fetchJSON(contributorURL, (err, data) => {
+    //console.log(data);
+    if (err) {
+      createAndAppend('div', mainDiv, {
+        text: err.message,
+        class: 'alert-error',
+      });
+    }
+    // Fetch Repo Information
+    createAndAppend('h5', repoInfo, {
+      text: `Title: ${dropdown.options[dropdown.selectedIndex].text}`,
+    });
+    createAndAppend('p', repoInfo, {
+      text: `Description: ${mainRepo[dropdown.options[dropdown.selectedIndex].value].description}`,
+    });
+    createAndAppend('p', repoInfo, {
+      text: `Forks: ${mainRepo[dropdown.options[dropdown.selectedIndex].value].forks}`,
+    });
+    createAndAppend('p', repoInfo, {
+      text: `Last updated: ${dateConverter(
+        mainRepo[dropdown.options[dropdown.selectedIndex].value].updated_at,
+      )}`,
+    });
+
+    //creating list of contributors
+    data.map(e => {
+      let li = createAndAppend('li', ul);
+      let a = createAndAppend('a', li, {
+        href: e.html_url,
+        target: '_blank',
+      });
+      createAndAppend('h5', a, { text: e.login, class: 'contributor-name' });
+      createAndAppend('span', a, { text: e.contributions });
+      createAndAppend('img', a, {
+        src: e.avatar_url,
+        alt: e.login,
+      });
+    });
+  });
+}
+
+//Fetch Functions
+function fetchJSON(url, cb) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
+  xhr.onload = () => {
+    if (xhr.status < 400) {
+      cb(null, xhr.response);
+    } else {
+      cb(new Error(`Network error: ${xhr.status} - ${xhr.statusText}`));
     }
   };
+  xhr.onerror = () => cb(new Error('Network request failed'));
   xhr.send();
+}
+
+//Creating and appending Elements
+function createAndAppend(name, parent, options = {}) {
+  const elem = document.createElement(name);
+  parent.appendChild(elem);
+  Object.keys(options).forEach(key => {
+    const value = options[key];
+    if (key === 'text') {
+      elem.innerText = value;
+    } else {
+      elem.setAttribute(key, value);
+    }
+  });
+  return elem;
+}
+
+//Helping Functions
+function dateConverter(date) {
+  let newDate = new Date(date);
+  return `${newDate.toLocaleDateString()} - ${newDate.toLocaleTimeString()}`;
 }

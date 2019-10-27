@@ -17,13 +17,13 @@ class App {
     // 2. Make an initial XMLHttpRequest using Util.fetchJSON() to populate your <select> element
 
     const root = document.getElementById('root');
-
-    Util.createAndAppend('h1', root, { text: 'It works!' }); // TODO: replace with your own code
+    // ...
 
     try {
+      // ...
       const repos = await Util.fetchJSON(url);
       this.repos = repos.map(repo => new Repository(repo));
-      // TODO: add your own code here
+      // ...
     } catch (error) {
       this.renderError(error);
     }
@@ -33,7 +33,7 @@ class App {
    * Removes all child elements from a container element
    * @param {*} container Container element to clear
    */
-  static clearContainer(container) {
+  clearContainer(container) {
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
@@ -50,7 +50,7 @@ class App {
       const contributors = await repo.fetchContributors();
 
       const container = document.getElementById('container');
-      App.clearContainer(container);
+      this.clearContainer(container);
 
       const leftDiv = Util.createAndAppend('div', container);
       const rightDiv = Util.createAndAppend('div', container);
@@ -72,10 +72,10 @@ class App {
    * @param {Error} error An Error object describing the error.
    */
   renderError(error) {
-    console.log(error); // TODO: replace with your own code
+    // Replace this comment with your code
   }
 }
 
-const REPOS_URL = 'https://api.github.com/orgs/foocoding/repos?per_page=100';
+const HYF_REPOS_URL = 'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
 
-window.onload = () => new App(REPOS_URL);
+window.onload = () => new App(HYF_REPOS_URL);

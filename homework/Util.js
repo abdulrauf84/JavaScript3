@@ -8,7 +8,7 @@ class Util {
     Object.keys(options).forEach(key => {
       const value = options[key];
       if (key === 'text') {
-        elem.textContent = value;
+        elem.innerText = value;
       } else {
         elem.setAttribute(key, value);
       }

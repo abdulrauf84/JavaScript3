@@ -4,16 +4,15 @@
 
 // eslint-disable-next-line no-unused-vars
 class Contributor {
-  constructor(contributor) {
-    this.contributor = contributor;
+  constructor(data) {
+    this.data = data;
   }
 
   /**
    * Render the contributor info to the DOM.
-   * @param {HTMLElement} container The container element in which to render the contributor.
+   * @param {HTMLElement} contributorList The parent element in which to render the contributor.
    */
-  render(container) {
-    // TODO: replace the next line with your code.
-    Util.createAndAppend('pre', container, JSON.stringify(this.contributor, null, 2));
+  render(contributorList) {
+    // Replace this comment with your code
   }
 }
